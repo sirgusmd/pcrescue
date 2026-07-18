@@ -1,54 +1,60 @@
 # PC Rescue
 
-A friendly, jargon-free guide that helps non-technical users keep their older
-Windows 10 computer alive by finding the right free (Linux-based) operating
-system for it — and, eventually, walking them through the switch.
+A friendly, jargon-free Windows desktop app that helps non-technical users
+keep their older Windows 10 computer alive by finding the right free
+(Linux-based) operating system for it — and, eventually, walking them
+through the switch.
 
-**Status: Phase 1 prototype.** This is a mock-data web prototype that locks in
-the UI, copy, and recommendation logic. It performs no real hardware scan yet.
+**Status: working desktop app with real scanning.** The app scans the
+machine's hardware (CPU age, memory, disk) and installed programs, then
+recommends a Linux system with plain-English reasons and an honest,
+per-program compatibility report. The USB flash wizard is specced
+(ROADMAP.md) but not yet built.
 
 ## Run it
 
-No build step, no dependencies — it's plain HTML/CSS/JS with ES modules.
-Because browsers block ES modules on `file://` pages, serve the folder with
-any static server:
-
 ```
-# Python (preinstalled on many systems)
-python -m http.server 8080
-
-# or Node
-npx serve .
+npm install
+npm start          # desktop app (Electron)
+npm run web        # browser version with manual questions only (no scanning)
+npm run dist       # build a Windows .exe into dist/
+$env:PCRESCUE_SMOKE="1"; npx electron .   # self-test; exit code 0 = healthy
 ```
 
-Then open http://localhost:8080
+Requires Node.js LTS. The web version also needs Python
+(`python -m http.server`) and skips the scanners — it exists so the UI can be
+developed and demoed anywhere.
 
 ## How it works
 
 | Path | Role |
 |---|---|
-| `index.html` | Single page with the three views (Welcome, Checklist, Results) |
-| `css/styles.css` | Design tokens + components; light & dark themes |
-| `js/app.js` | State + view switching |
-| `js/views/` | One module per view; presentation only |
-| `js/engine/recommend.js` | **The recommendation engine** — a pure function mapping answers to a top pick, alternatives, and honest trade-off notes. No DOM access, so the desktop app can feed it real scan data unchanged. |
-| `js/data/distros.js` | Distro catalog and question definitions — all user-facing copy is data-driven |
+| `index.html`, `css/`, `js/views/` | The three screens (Welcome, Checklist, Results); presentation only |
+| `js/engine/recommend.js` | **The recommendation engine** — pure function: answers → top pick, alternatives, honest trade-off notes, per-program verdicts |
+| `js/engine/interpret-scan.js` | Pure function: raw hardware scan → questionnaire answers (CPU generation ≈ machine age) |
+| `js/data/distros.js`, `js/data/apps.js` | All catalogs and user-facing copy — the product's content lives here |
+| `electron/main.js`, `electron/preload.js` | Desktop shell; renderer talks to the system only via a narrow `window.pcrescue` bridge |
+| `electron/scan/*.ps1` | Read-only PowerShell scanners (hardware + installed programs); JSON out, no elevation, nothing leaves the machine |
 
 ## Product principles
 
-- **Honest, not just cheerful**: Microsoft Office and anti-cheat gaming
-  limitations are stated plainly on the results screen.
-- **One confident pick**: novices want to be told, so one highlighted
-  recommendation with two de-emphasized alternatives.
-- **Try before you switch**: every recommended system runs live from USB
-  without touching the hard drive — the results screen says so.
+- **Honest, not just cheerful**: Microsoft Office, iTunes device sync, and
+  anti-cheat gaming limitations are stated plainly, never softened.
+- **One confident pick** with two quieter alternatives — novices want to be
+  told, not offered a menu.
+- **Try before you switch**: every recommended system runs live from USB.
 - **No dual-boot**: the guided path is try-from-USB → back up → clean install.
+- **Nothing leaves the machine**: scans are local; there is no telemetry.
 - **No jargon**: "operating system", never bare "distro", in user-facing copy.
 
-## Roadmap
+## For contributors (human or AI)
 
-1. ~~Web prototype with mock questionnaire (this repo)~~
-2. Desktop shell (Tauri or Electron — decision pending a WebView2 availability
-   check on real, un-updated Windows 10 hardware) with a real hardware scan
-   via PowerShell/WMI
-3. Guided USB flash wizard (ISO download + verified write)
+- `CLAUDE.md` — architecture, conventions, and the non-negotiable product
+  principles. Read first.
+- `ROADMAP.md` — specs for what's next, including the USB wizard's safety
+  rules.
+- `HANDOFF.md` — how to continue development with various AI coding tools.
+
+## License
+
+MIT — see LICENSE.
