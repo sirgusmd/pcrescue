@@ -76,7 +76,13 @@ body {
   padding-bottom: 0.9rem;
 }
 
-.logo { font-size: 1.4rem; }
+.logo {
+  width: 1.4rem;
+  height: 1.4rem;
+  color: var(--accent);
+  align-self: center;
+  flex-shrink: 0;
+}
 
 .site-name {
   font-weight: 700;
@@ -188,10 +194,16 @@ h1:focus, h2:focus { outline: none; }
 }
 
 .question legend {
+  /* Float pulls the legend inside the card instead of straddling its border */
+  float: left;
+  width: 100%;
   font-weight: 700;
   font-size: 1.2rem;
-  padding: 0 0.4rem;
+  padding: 0;
+  margin: 0 0 0.25rem;
 }
+
+.question-help { clear: both; }
 
 .question-help {
   margin: 0.25rem 0 1rem;
@@ -327,4 +339,6 @@ h1:focus, h2:focus { outline: none; }
   h1 { font-size: 1.6rem; }
   .view { padding-top: 1.75rem; }
   .button-row .btn { width: 100%; }
+  /* Keep "(Xfce Edition)" from wrapping mid-title on small screens */
+  .distro-name small { display: block; }
 }

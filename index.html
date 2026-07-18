@@ -11,7 +11,12 @@
 <body>
   <header class="site-header">
     <div class="wrap site-header-inner">
-      <span class="logo" aria-hidden="true">🛟</span>
+      <!-- Inline SVG life-ring: Windows 10's emoji font predates 🛟 -->
+      <svg class="logo" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="6" />
+        <circle cx="12" cy="12" r="8.5" fill="none" stroke="var(--surface)" stroke-width="2.5"
+                stroke-dasharray="6.7 6.7" stroke-dashoffset="3.35" />
+      </svg>
       <span class="site-name">PC&nbsp;Rescue</span>
       <span class="site-tag">A friendly guide for life after Windows&nbsp;10</span>
     </div>
