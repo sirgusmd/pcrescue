@@ -44,3 +44,6 @@ function runScript(scriptName, timeoutMs) {
 // targets (observed >30s on a 2012 laptop under disk load).
 exports.scanHardware = () => runScript("hardware.ps1", 90000);
 exports.scanInstalledApps = () => runScript("apps.ps1", 90000);
+// Size scan walks whole photo/video libraries — give it longest of all.
+exports.scanDataSizes = () => runScript("datasize.ps1", 300000);
+exports.listBackupDrives = () => runScript("drives.ps1", 60000);

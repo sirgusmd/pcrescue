@@ -57,6 +57,13 @@ export function renderResults(recommendation) {
           <div>
             <h4>${note.title}</h4>
             <p>${note.body}</p>
+            ${
+              note.tone === "important" && typeof window.pcrescue !== "undefined"
+                ? `<button type="button" id="backup-helper-button" class="btn btn-primary backup-cta">
+                     Help me back up now
+                   </button>`
+                : ""
+            }
           </div>
         </div>`
         )
@@ -65,8 +72,12 @@ export function renderResults(recommendation) {
   `;
 }
 
-export function initResults({ onBack }) {
+export function initResults({ onBack, onBackup }) {
   document.getElementById("results-back").addEventListener("click", onBack);
+  // The backup button is re-created on every render, so delegate the click.
+  document.getElementById("view-results").addEventListener("click", (event) => {
+    if (event.target.id === "backup-helper-button") onBackup();
+  });
 }
 
 function distroTitle(distro) {

@@ -428,6 +428,40 @@ h1:focus, h2:focus { outline: none; }
 
 .coming-soon { color: var(--ink-soft); font-size: 0.95rem; }
 
+/* Backup Helper */
+
+.backup-cta { margin-top: 0.75rem; }
+
+.backup-section-title { font-size: 1.2rem; margin: 0 0 0.75rem; }
+
+#view-backup .card { margin-bottom: 1.5rem; }
+
+#view-backup .note { margin-bottom: 1.5rem; }
+
+#backup-sizes { margin: 0 0 1rem; padding-left: 1.25rem; }
+
+#backup-sizes li { margin-bottom: 0.3rem; }
+
+.backup-total {
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--border);
+  list-style: none;
+  margin-left: -1.25rem;
+}
+
+#backup-drives { margin: 0.5rem 0; }
+
+#backup-progress-wrap { margin-top: 1.25rem; }
+
+#backup-progress {
+  width: 100%;
+  height: 1.1rem;
+  accent-color: var(--accent);
+}
+
+#backup-progress-text { margin: 0.5rem 0 0; color: var(--ink-soft); }
+
 @media (max-width: 480px) {
   h1 { font-size: 1.6rem; }
   .view { padding-top: 1.75rem; }

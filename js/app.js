@@ -4,6 +4,7 @@
 import { initWelcome } from "./views/welcome.js";
 import { initChecklist } from "./views/checklist.js";
 import { renderResults, initResults } from "./views/results.js";
+import { renderBackup, initBackup } from "./views/backup.js";
 import { recommend } from "./engine/recommend.js";
 
 const state = {
@@ -12,7 +13,7 @@ const state = {
   programs: new Set(),
 };
 
-const views = ["welcome", "checklist", "results"];
+const views = ["welcome", "checklist", "results", "backup"];
 
 function show(name) {
   for (const view of views) {
@@ -48,4 +49,12 @@ initResults({
     checklist.syncFromState();
     show("checklist");
   },
+  onBackup: () => {
+    renderBackup();
+    show("backup");
+  },
+});
+
+initBackup({
+  onBack: () => show("results"),
 });

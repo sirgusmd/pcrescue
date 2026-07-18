@@ -46,20 +46,19 @@ zero to a bootable Linux USB stick, then tells them exactly how to boot it.
   proven open-source flasher; (b) direct raw write via PowerShell/Win32 with
   the guards above. Do not hand-roll device enumeration heuristics.
 
-## Phase 4: Backup Helper
+## Phase 4: Backup Helper — BUILT (July 2026)
 
-Before the USB wizard (in flow order it comes first, build order second):
+Implemented: folder size scan (`electron/scan/datasize.ps1`), cloud-vs-drive
+advice with OneDrive-redirect awareness, browser-sync reminder, USB-only
+drive picker (`electron/scan/drives.ps1` — internal drives deliberately
+excluded), additive copy engine with progress (`electron/backup.js`), smoke
+coverage.
 
-- Measure Documents / Pictures / Desktop / Videos sizes (PowerShell scan,
-  same pattern as `electron/scan/`).
-- Small total (< ~5 GB) → suggest cloud (OneDrive free tier is 5 GB, Google
-  Drive 15 GB) with a walkthrough. Large → recommend an external drive and
-  offer to copy the folders with a progress bar.
-- **Browser sync step**: prompt the user to sign into Chrome/Firefox sync so
-  bookmarks and passwords survive the switch. This is the loss novices
-  actually cry about; it costs one screen.
-- Remind about less obvious data: email PST files, browser-stored passwords,
-  license keys, printer setup.
+Remaining for this phase:
+- The copy path needs a real end-to-end test with a physical USB drive
+  (measure → pick drive → copy → verify files landed).
+- Possible later: hydrate OneDrive cloud-only placeholders before copy, or
+  count and report them up front; remind about PST files / license keys.
 
 ## Smaller improvements (any order)
 

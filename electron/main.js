@@ -5,7 +5,13 @@
 const { app, BrowserWindow, ipcMain, protocol, net, shell } = require("electron");
 const path = require("path");
 const { pathToFileURL } = require("url");
-const { scanHardware, scanInstalledApps } = require("./scanners");
+const {
+  scanHardware,
+  scanInstalledApps,
+  scanDataSizes,
+  listBackupDrives,
+} = require("./scanners");
+const { runBackup } = require("./backup");
 
 // app:// must be registered as a standard scheme before app is ready,
 // otherwise relative ES-module imports won't resolve.
@@ -59,17 +65,44 @@ function runSmokeTest(win) {
         const age = document.querySelector('input[name="age"]:checked')?.value ?? null;
         const preticked = [...document.querySelectorAll('input[name="programs"]:checked')].map((el) => el.value);
         document.getElementById("checklist-submit").click();
+        const onResults = !document.getElementById("view-results").hidden;
+        const topPick = document.querySelector(".card-top-pick .distro-name")?.textContent.trim().replace(/\\s+/g, " ") ?? null;
+        const verdictGroups = [...document.querySelectorAll(".verdict-group h4")].map((h) => h.textContent.trim().replace(/\\s+/g, " "));
+
+        // Backup Helper: enter the view and wait for the size scan and drive
+        // list. Never starts a copy.
+        document.getElementById("backup-helper-button")?.click();
+        const onBackupView = !document.getElementById("view-backup").hidden;
+        let backupSizesShown = false;
+        for (let i = 0; i < 300; i++) {
+          await new Promise((r) => setTimeout(r, 500));
+          const sizesEl = document.getElementById("backup-sizes");
+          if (sizesEl && !sizesEl.hidden) { backupSizesShown = true; break; }
+        }
+        const backupTotal = [...document.querySelectorAll("#backup-sizes li")].pop()?.textContent.trim() ?? null;
+        const backupDrivesText = document.getElementById("backup-drives")?.textContent.trim().replace(/\\s+/g, " ").slice(0, 160) ?? null;
+
         return {
           scanCompleted: facts.length > 0,
           age,
           facts,
           preticked,
-          onResults: !document.getElementById("view-results").hidden,
-          topPick: document.querySelector(".card-top-pick .distro-name")?.textContent.trim().replace(/\\s+/g, " ") ?? null,
-          verdictGroups: [...document.querySelectorAll(".verdict-group h4")].map((h) => h.textContent.trim().replace(/\\s+/g, " ")),
+          onResults,
+          topPick,
+          verdictGroups,
+          onBackupView,
+          backupSizesShown,
+          backupTotal,
+          backupDrivesText,
         };
       })()`);
-      const passed = result.scanCompleted && result.age && result.onResults && result.topPick;
+      const passed =
+        result.scanCompleted &&
+        result.age &&
+        result.onResults &&
+        result.topPick &&
+        result.onBackupView &&
+        result.backupSizesShown;
       console.log("SMOKE_RESULT " + JSON.stringify(result));
       app.exit(passed ? 0 : 1);
     } catch (error) {
@@ -90,6 +123,35 @@ app.whenReady().then(() => {
 
   ipcMain.handle("scan:hardware", () => scanHardware());
   ipcMain.handle("scan:apps", () => scanInstalledApps());
+  ipcMain.handle("backup:scanSizes", () => scanDataSizes());
+  ipcMain.handle("backup:listDrives", () => listBackupDrives());
+
+  // Copies the user's folders to a chosen USB drive. Additive only (never
+  // deletes or overwrites user data). The target letter is re-verified
+  // against the live USB drive list immediately before any write.
+  ipcMain.handle("backup:start", async (event, targetLetter) => {
+    if (!/^[A-Z]$/i.test(targetLetter ?? "")) {
+      return { ok: false, reason: "Invalid drive." };
+    }
+    const drives = (await listBackupDrives()) ?? [];
+    const target = drives.find(
+      (d) => d.letter.toUpperCase() === targetLetter.toUpperCase()
+    );
+    if (!target) {
+      return { ok: false, reason: "That drive is no longer connected." };
+    }
+    const sizes = (await scanDataSizes()) ?? [];
+    const sources = sizes
+      .filter((s) => s.files > 0)
+      .map((s) => ({ label: s.label, path: s.path }));
+    if (sources.length === 0) {
+      return { ok: false, reason: "No files found to back up." };
+    }
+    const sender = event.sender;
+    return runBackup(sources, `${target.letter.toUpperCase()}:\\`, (progress) => {
+      if (!sender.isDestroyed()) sender.send("backup:progress", progress);
+    });
+  });
 
   createWindow();
 });
