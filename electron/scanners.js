@@ -14,9 +14,14 @@ function runScript(scriptName, timeoutMs) {
       "powershell.exe",
       [...PS_ARGS, scriptPath],
       { timeout: timeoutMs, windowsHide: true, maxBuffer: 4 * 1024 * 1024 },
-      (error, stdout) => {
+      (error, stdout, stderr) => {
         if (error) {
-          console.error(`${scriptName} failed:`, error.message);
+          console.error(
+            `${scriptName} failed (code ${error.code}):`,
+            error.message,
+            "stderr:",
+            (stderr || "").slice(0, 2000)
+          );
           return resolve(null);
         }
         try {

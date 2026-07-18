@@ -13,3 +13,7 @@ dist/
 
 # Local dev tooling
 .claude/
+
+# Build output
+dist/
+node_modules/

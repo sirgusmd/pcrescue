@@ -37,6 +37,46 @@ function createWindow() {
   });
 
   win.loadURL("app://bundle/index.html");
+
+  // Smoke-test mode (PCRESCUE_SMOKE=1): drives the real UI through a full
+  // scan-and-recommend flow, prints the outcome as JSON, and exits non-zero
+  // on failure. Lets any contributor (or AI assistant) verify the desktop
+  // build headlessly-ish: `$env:PCRESCUE_SMOKE="1"; npx electron .`
+  if (process.env.PCRESCUE_SMOKE === "1") runSmokeTest(win);
+}
+
+function runSmokeTest(win) {
+  win.webContents.once("did-finish-load", async () => {
+    try {
+      const result = await win.webContents.executeJavaScript(`(async () => {
+        document.getElementById("start-button").click();
+        document.getElementById("scan-button").click();
+        for (let i = 0; i < 60; i++) {
+          await new Promise((r) => setTimeout(r, 500));
+          if (!document.getElementById("scan-result").hidden) break;
+        }
+        const facts = [...document.querySelectorAll("#scan-facts li")].map((li) => li.textContent);
+        const age = document.querySelector('input[name="age"]:checked')?.value ?? null;
+        const preticked = [...document.querySelectorAll('input[name="programs"]:checked')].map((el) => el.value);
+        document.getElementById("checklist-submit").click();
+        return {
+          scanCompleted: facts.length > 0,
+          age,
+          facts,
+          preticked,
+          onResults: !document.getElementById("view-results").hidden,
+          topPick: document.querySelector(".card-top-pick .distro-name")?.textContent.trim().replace(/\\s+/g, " ") ?? null,
+          verdictGroups: [...document.querySelectorAll(".verdict-group h4")].map((h) => h.textContent.trim().replace(/\\s+/g, " ")),
+        };
+      })()`);
+      const passed = result.scanCompleted && result.age && result.onResults && result.topPick;
+      console.log("SMOKE_RESULT " + JSON.stringify(result));
+      app.exit(passed ? 0 : 1);
+    } catch (error) {
+      console.error("SMOKE_FAIL " + error.message);
+      app.exit(1);
+    }
+  });
 }
 
 app.whenReady().then(() => {
