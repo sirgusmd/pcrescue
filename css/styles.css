@@ -246,6 +246,99 @@ h1:focus, h2:focus { outline: none; }
   .form-error { color: #f2b8b5; }
 }
 
+/* Scan panel (desktop app only) */
+
+.scan-panel {
+  background: var(--accent-soft);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.25rem 1.5rem 1.5rem;
+  margin-bottom: 1.75rem;
+}
+
+.scan-panel h2 { font-size: 1.2rem; margin: 0 0 0.5rem; }
+
+.scan-panel p { margin: 0 0 1rem; }
+
+.scan-result { margin-top: 1.25rem; }
+
+.scan-result h3 { font-size: 1.05rem; margin: 0 0 0.5rem; }
+
+.scan-result ul { margin: 0 0 0.75rem; padding-left: 1.25rem; }
+
+.scan-note {
+  color: var(--ink-soft);
+  font-size: 0.95rem;
+  margin: 0 0 0.75rem;
+}
+
+/* Program picker */
+
+.optional-tag {
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--ink-soft);
+  background: var(--accent-soft);
+  border-radius: 999px;
+  padding: 0.15rem 0.7rem;
+  vertical-align: middle;
+}
+
+.program-search {
+  font: inherit;
+  width: 100%;
+  padding: 0.6rem 0.9rem;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--bg);
+  color: var(--ink);
+  margin-bottom: 0.75rem;
+}
+
+.program-list {
+  max-height: 21rem;
+  overflow-y: auto;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 0.4rem;
+}
+
+.program-choice { padding: 0.45rem 0.6rem; }
+
+/* Program verdict report */
+
+.programs-heading { margin: 2.25rem 0 1rem; font-size: 1.2rem; }
+
+.programs-report { display: grid; gap: 1rem; }
+
+.verdict-group {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 1.1rem 1.4rem;
+}
+
+.verdict-group h4 { margin: 0 0 0.25rem; font-size: 1.05rem; }
+
+.verdict-blurb {
+  margin: 0 0 0.75rem;
+  color: var(--ink-soft);
+  font-size: 0.95rem;
+}
+
+.verdict-group ul { margin: 0; padding-left: 1.25rem; }
+
+.verdict-group li { margin-bottom: 0.5rem; }
+
+.program-advice { display: block; color: var(--ink-soft); font-size: 0.95rem; }
+
+.verdict-no-go { border-left: 4px solid #b3261e; }
+
+.verdict-tricky { border-left: 4px solid var(--note-headsup-border); }
+
 /* Results */
 
 .card {

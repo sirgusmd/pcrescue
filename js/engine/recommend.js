@@ -3,6 +3,7 @@
 // questionnaire answers.
 
 import { DISTROS } from "../data/distros.js";
+import { APP_CATALOG } from "../data/apps.js";
 
 // Hardware-age tiers. Mint and Zorin headline because their Windows-like
 // layouts suit people coming from Windows; Ubuntu's desktop is too heavy for
@@ -106,9 +107,24 @@ function buildReasons(age, apps) {
   return reasons;
 }
 
+// Groups the user's chosen programs by verdict, in the order the results
+// screen should present them (best news first, worst news last but never
+// hidden).
+export const VERDICT_ORDER = ["native", "web", "alternative", "tricky", "no-go"];
+
+export function buildProgramReport(programIds) {
+  const ids = new Set(programIds);
+  const groups = {};
+  for (const app of APP_CATALOG) {
+    if (!ids.has(app.id)) continue;
+    (groups[app.verdict] ??= []).push(app);
+  }
+  return groups;
+}
+
 /**
- * @param {{ age: string, apps: Iterable<string> }} answers
- * @returns {{ topPick: object, alternatives: object[], notes: object[] }}
+ * @param {{ age: string, apps: Iterable<string>, programs?: Iterable<string> }} answers
+ * @returns {{ topPick: object, alternatives: object[], notes: object[], programReport: object }}
  */
 export function recommend(answers) {
   const apps = new Set(answers.apps);
@@ -132,5 +148,6 @@ export function recommend(answers) {
     },
     alternatives: alts.map((id) => ({ id, ...DISTROS[id] })),
     notes: buildNotes(apps, answers.age),
+    programReport: buildProgramReport(answers.programs ?? []),
   };
 }

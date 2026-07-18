@@ -9,6 +9,7 @@ import { recommend } from "./engine/recommend.js";
 const state = {
   age: null,
   apps: new Set(),
+  programs: new Set(),
 };
 
 const views = ["welcome", "checklist", "results"];
@@ -26,9 +27,10 @@ function show(name) {
 const checklist = initChecklist({
   state,
   onBack: () => show("welcome"),
-  onSubmit: ({ age, apps }) => {
+  onSubmit: ({ age, apps, programs }) => {
     state.age = age;
     state.apps = new Set(apps);
+    state.programs = new Set(programs);
     renderResults(recommend(state));
     show("results");
   },

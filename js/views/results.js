@@ -1,5 +1,8 @@
 // Results view: renders the recommendation returned by engine/recommend.js.
 
+import { VERDICTS } from "../data/apps.js";
+import { VERDICT_ORDER } from "../engine/recommend.js";
+
 const NOTE_ICONS = {
   "heads-up": "💡",
   "good-news": "🧪",
@@ -42,6 +45,8 @@ export function renderResults(recommendation) {
         .join("")}
     </div>
 
+    ${programReportSection(recommendation.programReport)}
+
     <h3 class="notes-heading">Good to know before you switch</h3>
     <div class="notes">
       ${notes
@@ -66,4 +71,37 @@ export function initResults({ onBack }) {
 
 function distroTitle(distro) {
   return distro.edition ? `${distro.name} <small>(${distro.edition})</small>` : distro.name;
+}
+
+function programReportSection(report) {
+  const groups = VERDICT_ORDER.filter((v) => report?.[v]?.length);
+  if (groups.length === 0) return "";
+  return `
+    <h3 class="programs-heading">Your programs on Linux</h3>
+    <div class="programs-report">
+      ${groups
+        .map((verdict) => {
+          const meta = VERDICTS[verdict];
+          return `
+          <div class="verdict-group verdict-${verdict}">
+            <h4>
+              <span aria-hidden="true">${meta.icon}</span>
+              ${meta.title}
+            </h4>
+            <p class="verdict-blurb">${meta.blurb}</p>
+            <ul>
+              ${report[verdict]
+                .map(
+                  (app) => `
+                <li>
+                  <strong>${app.name}</strong>
+                  <span class="program-advice">${app.advice}</span>
+                </li>`
+                )
+                .join("")}
+            </ul>
+          </div>`;
+        })
+        .join("")}
+    </div>`;
 }

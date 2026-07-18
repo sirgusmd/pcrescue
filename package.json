@@ -1,0 +1,30 @@
+{
+  "name": "pcrescue",
+  "version": "0.2.0",
+  "description": "PC Rescue — a friendly guide for life after Windows 10",
+  "main": "electron/main.js",
+  "scripts": {
+    "start": "electron .",
+    "web": "python -m http.server 8317",
+    "dist": "electron-builder --win"
+  },
+  "author": "Angus Dawnes",
+  "license": "MIT",
+  "build": {
+    "appId": "com.pcrescue.app",
+    "productName": "PC Rescue",
+    "files": [
+      "electron/**/*",
+      "index.html",
+      "css/**/*",
+      "js/**/*"
+    ],
+    "win": {
+      "target": ["portable", "nsis"]
+    },
+    "nsis": {
+      "oneClick": true,
+      "deleteAppDataOnUninstall": true
+    }
+  }
+}
