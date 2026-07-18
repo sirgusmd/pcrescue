@@ -5,10 +5,17 @@ with real hardware + installed-program scanning are **done**. The features
 below are specced but deliberately unbuilt — they were not rushed because
 they carry real risk (writing to drives) or need multi-machine testing.
 
-## Phase 3: USB Flash Wizard (the big one)
+## Phase 3: USB Flash Wizard (the big one) — SAFE PARTS BUILT (July 2026)
 
 Goal: from the results screen, "Start USB Flash Wizard" walks the user from
 zero to a bootable Linux USB stick, then tells them exactly how to boot it.
+
+Already built: the wizard view (`js/views/wizard.js`) with backup nudge,
+USB stick detection + 8 GB size check (`electron/scan/usbsticks.ps1`),
+honest manual instructions for step 3 (official ISO download + balenaEtcher),
+and the manufacturer-specific boot-key screen (`js/data/bootkeys.js`, fed by
+the hardware scan). **Not built: the automated download/verify/write step** —
+that is what remains below, and the safety rules apply in full.
 
 ### Steps
 

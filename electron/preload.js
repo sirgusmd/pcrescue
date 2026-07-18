@@ -9,6 +9,7 @@ contextBridge.exposeInMainWorld("pcrescue", {
   scanBackupSizes: () => ipcRenderer.invoke("backup:scanSizes"),
   listBackupDrives: () => ipcRenderer.invoke("backup:listDrives"),
   startBackup: (letter) => ipcRenderer.invoke("backup:start", letter),
+  listUsbSticks: () => ipcRenderer.invoke("wizard:listSticks"),
   onBackupProgress: (callback) =>
     ipcRenderer.on("backup:progress", (_event, progress) => callback(progress)),
 });

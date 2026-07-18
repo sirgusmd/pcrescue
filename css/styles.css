@@ -462,6 +462,48 @@ h1:focus, h2:focus { outline: none; }
 
 #backup-progress-text { margin: 0.5rem 0 0; color: var(--ink-soft); }
 
+/* USB wizard */
+
+.wizard-step { margin-bottom: 1.5rem; }
+
+.wizard-step h2 {
+  font-size: 1.2rem;
+  margin: 0 0 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+}
+
+.step-number {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.9rem;
+  height: 1.9rem;
+  border-radius: 50%;
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+.wizard-substeps { margin: 0; padding-left: 1.4rem; }
+
+.wizard-substeps li { margin-bottom: 0.6rem; }
+
+.boot-key {
+  display: inline-block;
+  background: var(--ink);
+  color: var(--bg);
+  border-radius: 8px;
+  padding: 0.1rem 0.7rem;
+  font-size: 1.1em;
+}
+
+#wizard-sticks { margin-top: 1rem; }
+
+#wizard-sticks .note { margin-bottom: 0.75rem; }
+
 @media (max-width: 480px) {
   h1 { font-size: 1.6rem; }
   .view { padding-top: 1.75rem; }

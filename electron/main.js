@@ -10,6 +10,7 @@ const {
   scanInstalledApps,
   scanDataSizes,
   listBackupDrives,
+  listUsbSticks,
 } = require("./scanners");
 const { runBackup } = require("./backup");
 
@@ -82,6 +83,23 @@ function runSmokeTest(win) {
         const backupTotal = [...document.querySelectorAll("#backup-sizes li")].pop()?.textContent.trim() ?? null;
         const backupDrivesText = document.getElementById("backup-drives")?.textContent.trim().replace(/\\s+/g, " ").slice(0, 160) ?? null;
 
+        // USB wizard (safe steps): enter from results, check the boot key
+        // reflects the scanned manufacturer, and run the stick check.
+        document.getElementById("backup-back").click();
+        document.getElementById("wizard-button").click();
+        const onWizardView = !document.getElementById("view-wizard").hidden;
+        const bootKeyShown = document.querySelector(".boot-key")?.textContent.trim() ?? null;
+        document.getElementById("wizard-check-sticks")?.click();
+        let wizardSticksText = null;
+        for (let i = 0; i < 120; i++) {
+          await new Promise((r) => setTimeout(r, 500));
+          const el = document.getElementById("wizard-sticks");
+          if (el && el.textContent.trim() !== "") {
+            wizardSticksText = el.textContent.trim().replace(/\\s+/g, " ").slice(0, 160);
+            break;
+          }
+        }
+
         return {
           scanCompleted: facts.length > 0,
           age,
@@ -94,6 +112,9 @@ function runSmokeTest(win) {
           backupSizesShown,
           backupTotal,
           backupDrivesText,
+          onWizardView,
+          bootKeyShown,
+          wizardSticksText,
         };
       })()`);
       const passed =
@@ -102,7 +123,9 @@ function runSmokeTest(win) {
         result.onResults &&
         result.topPick &&
         result.onBackupView &&
-        result.backupSizesShown;
+        result.backupSizesShown &&
+        result.onWizardView &&
+        result.bootKeyShown;
       console.log("SMOKE_RESULT " + JSON.stringify(result));
       app.exit(passed ? 0 : 1);
     } catch (error) {
@@ -125,6 +148,7 @@ app.whenReady().then(() => {
   ipcMain.handle("scan:apps", () => scanInstalledApps());
   ipcMain.handle("backup:scanSizes", () => scanDataSizes());
   ipcMain.handle("backup:listDrives", () => listBackupDrives());
+  ipcMain.handle("wizard:listSticks", () => listUsbSticks());
 
   // Copies the user's folders to a chosen USB drive. Additive only (never
   // deletes or overwrites user data). The target letter is re-verified

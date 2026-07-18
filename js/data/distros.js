@@ -13,6 +13,7 @@ export const DISTROS = {
       "expect them. The Xfce edition is specially tuned to stay quick on " +
       "older computers.",
     website: "https://linuxmint.com",
+    downloadUrl: "https://linuxmint.com/download.php",
   },
   "mint-cinnamon": {
     name: "Linux Mint",
@@ -22,6 +23,7 @@ export const DISTROS = {
       "Polished, comfortable, and easy to learn. One of the most " +
       "recommended systems for people moving on from Windows.",
     website: "https://linuxmint.com",
+    downloadUrl: "https://linuxmint.com/download.php",
   },
   "lubuntu": {
     name: "Lubuntu",
@@ -31,6 +33,7 @@ export const DISTROS = {
       "One of the lightest systems around — a good fit when speed on an " +
       "older machine matters most.",
     website: "https://lubuntu.me",
+    downloadUrl: "https://lubuntu.me/downloads/",
   },
   "zorin-lite": {
     name: "Zorin OS",
@@ -40,6 +43,7 @@ export const DISTROS = {
       "Designed to look and feel like Windows, in a slimmed-down version " +
       "built for older computers.",
     website: "https://zorin.com/os",
+    downloadUrl: "https://zorin.com/os/download/",
   },
   "zorin-core": {
     name: "Zorin OS",
@@ -49,6 +53,7 @@ export const DISTROS = {
       "Made especially for people switching from Windows — everything is " +
       "where you'd expect, so there's very little to relearn.",
     website: "https://zorin.com/os",
+    downloadUrl: "https://zorin.com/os/download/",
   },
   "ubuntu": {
     name: "Ubuntu",
@@ -58,6 +63,7 @@ export const DISTROS = {
       "The world's best-known free system, with a huge community — almost " +
       "any question you have has already been answered online.",
     website: "https://ubuntu.com",
+    downloadUrl: "https://ubuntu.com/download/desktop",
   },
   "popos": {
     name: "Pop!_OS",
@@ -68,6 +74,7 @@ export const DISTROS = {
       "looked after. Its modern desktop looks a little different from " +
       "Windows, so expect a short settling-in period.",
     website: "https://system76.com/pop",
+    downloadUrl: "https://system76.com/pop/download/",
   },
 };
 

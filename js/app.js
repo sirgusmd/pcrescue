@@ -5,6 +5,7 @@ import { initWelcome } from "./views/welcome.js";
 import { initChecklist } from "./views/checklist.js";
 import { renderResults, initResults } from "./views/results.js";
 import { renderBackup, initBackup } from "./views/backup.js";
+import { renderWizard, initWizard } from "./views/wizard.js";
 import { recommend } from "./engine/recommend.js";
 
 const state = {
@@ -13,7 +14,9 @@ const state = {
   programs: new Set(),
 };
 
-const views = ["welcome", "checklist", "results", "backup"];
+const views = ["welcome", "checklist", "results", "backup", "wizard"];
+
+let lastRecommendation = null;
 
 function show(name) {
   for (const view of views) {
@@ -32,7 +35,8 @@ const checklist = initChecklist({
     state.age = age;
     state.apps = new Set(apps);
     state.programs = new Set(programs);
-    renderResults(recommend(state));
+    lastRecommendation = recommend(state);
+    renderResults(lastRecommendation);
     show("results");
   },
 });
@@ -57,4 +61,21 @@ initResults({
 
 initBackup({
   onBack: () => show("results"),
+});
+
+initWizard({
+  onBack: () => show("results"),
+  onBackup: () => {
+    renderBackup();
+    show("backup");
+  },
+});
+
+document.getElementById("wizard-button").addEventListener("click", () => {
+  if (!lastRecommendation) return;
+  renderWizard({
+    topPick: lastRecommendation.topPick,
+    hardware: state.hardware ?? null,
+  });
+  show("wizard");
 });

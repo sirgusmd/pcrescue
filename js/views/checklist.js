@@ -155,6 +155,7 @@ export function initChecklist({ state, onBack, onSubmit }) {
           window.pcrescue.scanApps(),
         ]);
 
+        state.hardware = hardware; // kept for the wizard's boot-key screen
         const interpreted = interpretScan(hardware);
         if (interpreted) {
           const radio = formEl.querySelector(

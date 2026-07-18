@@ -71,20 +71,29 @@
       </div>
     </section>
 
+    <!-- View 5: USB Flash Wizard (safe steps; no disk writing) -->
+    <section id="view-wizard" class="view" aria-labelledby="wizard-heading" hidden>
+      <h1 id="wizard-heading" tabindex="-1">Try it from a USB stick</h1>
+      <div id="wizard-content"><!-- built by js/views/wizard.js --></div>
+      <div class="button-row">
+        <button type="button" id="wizard-back" class="btn btn-quiet">&larr; Back to your recommendation</button>
+      </div>
+    </section>
+
     <!-- View 3: Results -->
     <section id="view-results" class="view" aria-labelledby="results-heading" hidden>
       <h1 id="results-heading" tabindex="-1">Good news — your computer has plenty of life left</h1>
       <div id="results-content"><!-- built by js/views/results.js --></div>
       <div class="button-row">
         <button type="button" id="results-back" class="btn btn-quiet">&larr; Change my answers</button>
-        <button type="button" id="wizard-button" class="btn btn-primary" disabled
+        <button type="button" id="wizard-button" class="btn btn-primary"
                 aria-describedby="wizard-note">
           Start USB Flash Wizard
         </button>
       </div>
       <p id="wizard-note" class="coming-soon">
-        The step-by-step USB wizard is coming soon. For now, each system's website has
-        friendly install guides.
+        Step-by-step, at your pace — and nothing is installed unless you
+        choose to.
       </p>
     </section>
 
