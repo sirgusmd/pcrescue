@@ -1,0 +1,12 @@
+# Personal planning material — keep out of the public repo
+Linuxmigration.md
+WhatsApp Image*.jpeg
+
+# OS clutter
+Thumbs.db
+desktop.ini
+.DS_Store
+
+# Future tooling
+node_modules/
+dist/

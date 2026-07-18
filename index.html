@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PC Rescue — Give your computer a second life</title>
+  <meta name="description" content="A friendly, free guide to keeping your older computer safe and fast after Windows 10." />
+  <link rel="stylesheet" href="css/styles.css" />
+  <script type="module" src="js/app.js"></script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap site-header-inner">
+      <span class="logo" aria-hidden="true">🛟</span>
+      <span class="site-name">PC&nbsp;Rescue</span>
+      <span class="site-tag">A friendly guide for life after Windows&nbsp;10</span>
+    </div>
+  </header>
+
+  <main id="main" class="wrap">
+
+    <!-- View 1: Welcome -->
+    <section id="view-welcome" class="view" aria-labelledby="welcome-heading">
+      <h1 id="welcome-heading" tabindex="-1">Give your computer a second&nbsp;life</h1>
+      <p class="lead">
+        Windows&nbsp;10 stopped getting security updates in October&nbsp;2025 — but if your
+        computer still works well, there's no need to throw it away or buy a new one.
+      </p>
+      <p>
+        This free tool helps you find a <strong>safe, fast, and free</strong> replacement
+        system that keeps you browsing, emailing, and watching videos just like before.
+        We'll ask a few simple questions about your computer and what you use it for,
+        then suggest the best fit — explained in plain English.
+      </p>
+      <div class="reassure" role="note">
+        <span class="reassure-icon" aria-hidden="true">✅</span>
+        <p><strong>Nothing is installed or changed on your computer today.</strong>
+        It's just a few questions — you can stop at any time.</p>
+      </div>
+      <button type="button" id="start-button" class="btn btn-primary btn-big">
+        Start Hardware Checklist
+      </button>
+    </section>
+
+    <!-- View 2: Checklist -->
+    <section id="view-checklist" class="view" aria-labelledby="checklist-heading" hidden>
+      <h1 id="checklist-heading" tabindex="-1">Tell us about your computer</h1>
+      <p class="lead">Two quick questions — best guesses are absolutely fine.</p>
+      <form id="checklist-form" novalidate>
+        <div id="checklist-questions"><!-- built by js/views/checklist.js --></div>
+        <div class="button-row">
+          <button type="button" id="checklist-back" class="btn btn-quiet">&larr; Back</button>
+          <button type="submit" id="checklist-submit" class="btn btn-primary">
+            See my recommendation
+          </button>
+        </div>
+      </form>
+    </section>
+
+    <!-- View 3: Results -->
+    <section id="view-results" class="view" aria-labelledby="results-heading" hidden>
+      <h1 id="results-heading" tabindex="-1">Good news — your computer has plenty of life left</h1>
+      <div id="results-content"><!-- built by js/views/results.js --></div>
+      <div class="button-row">
+        <button type="button" id="results-back" class="btn btn-quiet">&larr; Change my answers</button>
+        <button type="button" id="wizard-button" class="btn btn-primary" disabled
+                aria-describedby="wizard-note">
+          Start USB Flash Wizard
+        </button>
+      </div>
+      <p id="wizard-note" class="coming-soon">
+        The step-by-step USB wizard is coming soon. For now, each system's website has
+        friendly install guides.
+      </p>
+    </section>
+
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      <p>PC&nbsp;Rescue is a free community tool. It never collects or sends your information.</p>
+      <p class="fineprint">Early preview — recommendations are illustrative while we build the real hardware check.</p>
+    </div>
+  </footer>
+</body>
+</html>
