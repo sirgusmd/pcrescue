@@ -46,8 +46,12 @@ const APP_REASONS = {
   gaming: "Steam installs easily, and a large share of games run well on it.",
 };
 
+// Age tiers with enough power for Pop!_OS's modern desktop; on older
+// machines the gaming swap is skipped and expectations are set instead.
+const GAMING_CAPABLE_AGES = new Set(["lt5", "5to10"]);
+
 // Honest-trade-off and reassurance callouts shown on the results screen.
-function buildNotes(apps) {
+function buildNotes(apps, age) {
   const notes = [];
   if (apps.has("office")) {
     notes.push({
@@ -62,15 +66,17 @@ function buildNotes(apps) {
     });
   }
   if (apps.has("gaming")) {
-    notes.push({
-      tone: "heads-up",
-      title: "About your Steam games",
-      body:
-        "Many Steam games run well thanks to a built-in translation layer " +
-        "called Proton — but some online multiplayer games with anti-cheat " +
-        "protection won't work. Before switching, check your favourite games " +
-        "on protondb.com (a free compatibility checker).",
-    });
+    let body =
+      "Many Steam games run well thanks to a built-in translation layer " +
+      "called Proton — but some online multiplayer games with anti-cheat " +
+      "protection won't work. Before switching, check your favourite games " +
+      "on protondb.com (a free compatibility checker).";
+    if (!GAMING_CAPABLE_AGES.has(age)) {
+      body +=
+        " One honest note: a computer this age will struggle with newer 3D " +
+        "games on any system — older and lighter games are the sweet spot.";
+    }
+    notes.push({ tone: "heads-up", title: "About your Steam games", body });
   }
   notes.push({
     tone: "good-news",
@@ -92,16 +98,10 @@ function buildNotes(apps) {
   return notes;
 }
 
-function buildReasons(age, apps, topId) {
+function buildReasons(age, apps) {
   const reasons = [AGE_REASONS[age] ?? AGE_REASONS["unsure"]];
   for (const appId of Object.keys(APP_REASONS)) {
     if (apps.has(appId)) reasons.push(APP_REASONS[appId]);
-  }
-  if (topId.startsWith("zorin") || topId.startsWith("mint")) {
-    reasons.push(
-      "Its menus and taskbar work much like Windows, so there's very little " +
-        "to relearn."
-    );
   }
   return reasons;
 }
@@ -115,7 +115,12 @@ export function recommend(answers) {
   const tier = TIERS[answers.age] ?? TIERS["unsure"];
 
   const alts = [...tier.alts];
-  if (apps.has("gaming") && tier.top !== "popos" && !alts.includes("popos")) {
+  if (
+    apps.has("gaming") &&
+    GAMING_CAPABLE_AGES.has(answers.age) &&
+    tier.top !== "popos" &&
+    !alts.includes("popos")
+  ) {
     alts[alts.length - 1] = "popos";
   }
 
@@ -123,9 +128,9 @@ export function recommend(answers) {
     topPick: {
       id: tier.top,
       ...DISTROS[tier.top],
-      reasons: buildReasons(answers.age, apps, tier.top),
+      reasons: buildReasons(answers.age, apps),
     },
     alternatives: alts.map((id) => ({ id, ...DISTROS[id] })),
-    notes: buildNotes(apps),
+    notes: buildNotes(apps, answers.age),
   };
 }

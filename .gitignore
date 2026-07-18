@@ -10,3 +10,6 @@ desktop.ini
 # Future tooling
 node_modules/
 dist/
+
+# Local dev tooling
+.claude/

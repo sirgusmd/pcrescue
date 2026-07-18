@@ -6,7 +6,7 @@ import { AGE_OPTIONS, APP_OPTIONS } from "../data/distros.js";
 export function initChecklist({ state, onBack, onSubmit }) {
   const container = document.getElementById("checklist-questions");
   container.innerHTML = `
-    <fieldset class="question">
+    <fieldset class="question" aria-describedby="age-error">
       <legend>How old is your computer?</legend>
       <p class="question-help">A rough guess is fine.</p>
       ${AGE_OPTIONS.map(
