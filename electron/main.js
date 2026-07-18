@@ -51,7 +51,7 @@ function runSmokeTest(win) {
       const result = await win.webContents.executeJavaScript(`(async () => {
         document.getElementById("start-button").click();
         document.getElementById("scan-button").click();
-        for (let i = 0; i < 60; i++) {
+        for (let i = 0; i < 200; i++) {
           await new Promise((r) => setTimeout(r, 500));
           if (!document.getElementById("scan-result").hidden) break;
         }

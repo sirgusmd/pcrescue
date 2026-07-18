@@ -8,7 +8,11 @@ const path = require("path");
 const PS_ARGS = ["-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass", "-File"];
 
 function runScript(scriptName, timeoutMs) {
-  const scriptPath = path.join(__dirname, "scan", scriptName);
+  // In the packaged app the scripts live in app.asar.unpacked (see
+  // asarUnpack in package.json) — powershell.exe can't read inside an asar.
+  const scriptPath = path
+    .join(__dirname, "scan", scriptName)
+    .replace("app.asar", "app.asar.unpacked");
   return new Promise((resolve) => {
     execFile(
       "powershell.exe",
@@ -35,5 +39,8 @@ function runScript(scriptName, timeoutMs) {
   });
 }
 
-exports.scanHardware = () => runScript("hardware.ps1", 30000);
-exports.scanInstalledApps = () => runScript("apps.ps1", 30000);
+// Generous timeouts: PowerShell's CIM/Storage modules can take a long time
+// to cold-start on old hardware — which is exactly the hardware this app
+// targets (observed >30s on a 2012 laptop under disk load).
+exports.scanHardware = () => runScript("hardware.ps1", 90000);
+exports.scanInstalledApps = () => runScript("apps.ps1", 90000);

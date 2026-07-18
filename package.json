@@ -19,6 +19,9 @@
       "css/**/*",
       "js/**/*"
     ],
+    "asarUnpack": [
+      "electron/scan/**"
+    ],
     "win": {
       "target": [
         "portable",
