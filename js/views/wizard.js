@@ -6,7 +6,12 @@
 
 import { bootKeyFor } from "../data/bootkeys.js";
 
-const MIN_STICK_GB = 8;
+// Users buy "8 GB" sticks (decimal), Windows reports ~7.3 GB (binary) —
+// so the size check accepts anything over 7 while the copy talks in the
+// units printed on the stick. Verified against a real Transcend "8GB"
+// stick reporting 7.3.
+const MIN_STICK_GB = 7;
+const MIN_STICK_LABEL = "8 GB";
 
 export function initWizard({ onBack, onBackup }) {
   document.getElementById("wizard-back").addEventListener("click", onBack);
@@ -44,7 +49,7 @@ export function renderWizard({ topPick, hardware }) {
     <div class="card wizard-step">
       <h2><span class="step-number">2</span> Get a USB memory stick ready</h2>
       <p>
-        You need a stick of <strong>${MIN_STICK_GB} GB or more</strong>.
+        You need a stick of <strong>${MIN_STICK_LABEL} or more</strong>.
         <strong>Everything on it will be erased</strong> when it's turned into
         an installer, so use one with nothing precious on it.
       </p>
@@ -137,7 +142,7 @@ function wireStickCheck() {
             <p>${
               bigEnough
                 ? "Big enough — this one will do nicely. Double-check there's nothing on it you want to keep."
-                : `Too small, sorry — you need ${MIN_STICK_GB} GB and this one holds ${stick.sizeGB} GB.`
+                : `Too small, sorry — you need ${MIN_STICK_LABEL} and this one holds ${stick.sizeGB} GB.`
             }</p>
           </div>
         </div>`;
