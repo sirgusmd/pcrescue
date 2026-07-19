@@ -20,7 +20,8 @@
       "js/**/*"
     ],
     "asarUnpack": [
-      "electron/scan/**"
+      "electron/scan/**",
+      "electron/flash.ps1"
     ],
     "win": {
       "target": [

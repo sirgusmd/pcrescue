@@ -14,6 +14,8 @@ const {
 } = require("./scanners");
 const { runBackup } = require("./backup");
 const { downloadIso, cancelDownload } = require("./download");
+const { flashIso } = require("./flash");
+const fs = require("fs");
 
 // app:// must be registered as a standard scheme before app is ready,
 // otherwise relative ES-module imports won't resolve.
@@ -91,6 +93,15 @@ function runSmokeTest(win) {
         const onWizardView = !document.getElementById("view-wizard").hidden;
         const bootKeyShown = document.querySelector(".boot-key")?.textContent.trim() ?? null;
         const hasDownloadButton = !!document.getElementById("wizard-download");
+        // The flash area reveals asynchronously when the ISO is already in
+        // Downloads (true on this dev machine) — wait briefly for it.
+        let flashAreaShown = false;
+        for (let i = 0; i < 40; i++) {
+          await new Promise((r) => setTimeout(r, 500));
+          const area = document.getElementById("wizard-flash-area");
+          if (area && !area.hidden) { flashAreaShown = true; break; }
+        }
+        const flashSticksText = document.getElementById("wizard-flash-sticks")?.textContent.trim().replace(/\\s+/g, " ").slice(0, 120) ?? null;
         document.getElementById("wizard-check-sticks")?.click();
         let wizardSticksText = null;
         for (let i = 0; i < 120; i++) {
@@ -117,6 +128,8 @@ function runSmokeTest(win) {
           onWizardView,
           bootKeyShown,
           hasDownloadButton,
+          flashAreaShown,
+          flashSticksText,
           wizardSticksText,
         };
       })()`);
@@ -161,6 +174,39 @@ app.whenReady().then(() => {
     });
   });
   ipcMain.handle("wizard:cancelDownload", () => cancelDownload());
+
+  // Is the ISO for this catalog entry already in Downloads?
+  ipcMain.handle("wizard:checkIso", (event, entry) => {
+    if (!/^[\w.-]+$/.test(entry?.filename ?? "")) return { present: false };
+    const isoPath = path.join(app.getPath("downloads"), entry.filename);
+    return fs.existsSync(isoPath) ? { present: true, path: isoPath } : { present: false };
+  });
+
+  // Write the ISO to a USB stick. The renderer only names a disk number and
+  // a catalog entry — the path is derived here (never trusted from the
+  // renderer), the stick is re-verified against the live USB list, and
+  // flash.ps1 re-verifies everything again inside the elevated process.
+  ipcMain.handle("wizard:flash", async (event, { diskNumber, entry }) => {
+    if (!Number.isInteger(diskNumber)) return { ok: false, reason: "Invalid drive." };
+    if (!/^[\w.-]+$/.test(entry?.filename ?? "") || !/^[0-9a-f]{64}$/i.test(entry?.sha256 ?? "")) {
+      return { ok: false, reason: "Invalid system file details." };
+    }
+    const sticks = (await listUsbSticks()) ?? [];
+    if (!sticks.some((s) => s.diskNumber === diskNumber)) {
+      return { ok: false, reason: "That stick is no longer connected." };
+    }
+    const isoPath = path.join(app.getPath("downloads"), entry.filename);
+    if (!fs.existsSync(isoPath)) {
+      return { ok: false, reason: "The downloaded system file has gone missing — download it again." };
+    }
+    const sender = event.sender;
+    return flashIso(
+      { diskNumber, isoPath, expectedSha256: entry.sha256 },
+      (progress) => {
+        if (!sender.isDestroyed()) sender.send("wizard:flashProgress", progress);
+      }
+    );
+  });
 
   // Copies the user's folders to a chosen USB drive. Additive only (never
   // deletes or overwrites user data). The target letter is re-verified

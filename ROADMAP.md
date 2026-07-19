@@ -18,10 +18,19 @@ with SHA-256 verification** (`electron/download.js` + pinned catalog in
 `js/data/isos.js`; host allowlist; mismatch deletes the file). Etcher still
 does the write, with instructions.
 
-**Not built: the automated WRITE step** — that is what remains below, and
-the safety rules apply in full. Also outstanding: refresh `js/data/isos.js`
-when distro versions bump (pinned 2026-07-20: Mint 22.3, Ubuntu/Lubuntu
-26.04; Zorin has no stable direct URL and stays manual).
+**The automated WRITE step is now BUILT** (`electron/flash.ps1` elevated
+writer + `electron/flash.js` UAC launcher + wizard write UI): re-verifies
+USB/non-system inside the elevated process, re-hashes the ISO, raw
+sector-aligned write, then full read-back hash verification. First real
+flash ran 2026-07-20 on a Transcend 8GB (check the session notes / ask Gus
+whether the BOOT test passed — do not consider the feature fully validated
+until a flashed stick has booted a real machine).
+
+Outstanding: boot-test confirmation; refresh `js/data/isos.js` when distro
+versions bump (pinned 2026-07-20: Mint 22.3, Ubuntu/Lubuntu 26.04; Zorin
+has no stable direct URL and stays manual); cut a v0.5.0 release once the
+boot test passes (build + packaged smoke + `gh release create` — see git
+history for the pattern).
 
 ### Steps
 

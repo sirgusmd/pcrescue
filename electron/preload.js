@@ -14,6 +14,10 @@ contextBridge.exposeInMainWorld("pcrescue", {
   cancelIsoDownload: () => ipcRenderer.invoke("wizard:cancelDownload"),
   onDownloadProgress: (callback) =>
     ipcRenderer.on("wizard:downloadProgress", (_event, progress) => callback(progress)),
+  checkIso: (entry) => ipcRenderer.invoke("wizard:checkIso", entry),
+  flashIso: (diskNumber, entry) => ipcRenderer.invoke("wizard:flash", { diskNumber, entry }),
+  onFlashProgress: (callback) =>
+    ipcRenderer.on("wizard:flashProgress", (_event, progress) => callback(progress)),
   onBackupProgress: (callback) =>
     ipcRenderer.on("backup:progress", (_event, progress) => callback(progress)),
 });

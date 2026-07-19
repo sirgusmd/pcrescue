@@ -95,7 +95,35 @@ export function renderWizard({ topPick, hardware }) {
 
   if (isDesktop) {
     wireStickCheck();
-    if (ISO_CATALOG[topPick.id]) wireDownload(topPick);
+    if (ISO_CATALOG[topPick.id]) {
+      wireDownload(topPick);
+      wireFlash(topPick);
+      revealFlashIfIsoPresent(topPick);
+    }
+  }
+}
+
+// If the ISO was downloaded in an earlier session, skip straight to writing.
+async function revealFlashIfIsoPresent(topPick) {
+  const iso = ISO_CATALOG[topPick.id];
+  const status = await window.pcrescue.checkIso(iso);
+  if (!status.present) return;
+  const button = document.getElementById("wizard-download");
+  if (button && !button.hidden) {
+    const done = document.getElementById("wizard-dl-done");
+    document.getElementById("wizard-dl-done-text").textContent =
+      `Already downloaded — it's at ${status.path}.`;
+    done.hidden = false;
+    button.hidden = true;
+  }
+  showFlashArea();
+}
+
+function showFlashArea() {
+  const area = document.getElementById("wizard-flash-area");
+  if (area && area.hidden) {
+    area.hidden = false;
+    document.getElementById("wizard-flash-refresh").click();
   }
 }
 
@@ -157,18 +185,52 @@ function downloadSectionTemplate(topPick, isDesktop) {
         </div>
       </div>
       <p class="form-error" id="wizard-dl-error" role="alert" hidden></p>
-      <p>Then two small steps finish the job:</p>
-      <ol class="wizard-substeps">
-        <li>
-          Download <a href="https://etcher.balena.io" target="_blank" rel="noopener">
-          balenaEtcher</a> (free) — a simple tool trusted by millions for
-          exactly this job.
-        </li>
-        <li>
-          Open Etcher: pick the file we downloaded (it's in your Downloads
-          folder), pick your USB stick, click <strong>Flash</strong>.
-        </li>
-      </ol>`;
+
+      <div id="wizard-flash-area" hidden>
+        <h3 class="flash-title">Write it to your stick</h3>
+        <p>
+          <strong>This erases everything on the stick</strong> and turns it
+          into a ${topPick.name} installer. Windows will show a permission
+          prompt — that's us asking for the access needed to write it.
+        </p>
+        <div class="button-row">
+          <button type="button" id="wizard-flash-refresh" class="btn btn-quiet">
+            Look for sticks
+          </button>
+        </div>
+        <div id="wizard-flash-sticks" role="radiogroup" aria-label="Choose the stick to erase"></div>
+        <label class="choice">
+          <input type="checkbox" id="wizard-flash-consent" />
+          <span class="choice-text">I understand everything on this stick will be erased</span>
+        </label>
+        <div class="button-row">
+          <button type="button" id="wizard-flash-button" class="btn btn-primary" disabled>
+            Erase the stick and write
+          </button>
+        </div>
+        <div id="wizard-flash-progress-wrap" hidden>
+          <progress id="wizard-flash-progress" max="100" value="0"></progress>
+          <p id="wizard-flash-progress-text"></p>
+        </div>
+        <div id="wizard-flash-done" class="note note-good-news" hidden>
+          <span class="note-icon" aria-hidden="true">🎉</span>
+          <div>
+            <h4>The stick is ready</h4>
+            <p>
+              We wrote it and read every bit back to make sure it's perfect.
+              Windows may pop up asking to format the stick — just close
+              those; the stick is exactly as it should be. On to step 4!
+            </p>
+          </div>
+        </div>
+        <p class="form-error" id="wizard-flash-error" role="alert" hidden></p>
+        <p class="question-help">
+          Prefer the well-known
+          <a href="https://etcher.balena.io" target="_blank" rel="noopener">balenaEtcher</a>
+          tool instead? That works too — point it at the file in your
+          Downloads folder.
+        </p>
+      </div>`;
 }
 
 function wireDownload(topPick) {
@@ -212,12 +274,107 @@ function wireDownload(topPick) {
     button.hidden = true;
     const done = document.getElementById("wizard-dl-done");
     document.getElementById("wizard-dl-done-text").textContent =
-      `Saved to ${result.path}. When you open Etcher, that's the file to pick.`;
+      `Saved to ${result.path}.`;
     done.hidden = false;
+    showFlashArea();
   });
 
   cancelBtn.addEventListener("click", () => {
     window.pcrescue.cancelIsoDownload();
+  });
+}
+
+const FLASH_STAGE_TEXT = {
+  "checking-file": "Checking the downloaded file is still perfect…",
+  preparing: "Preparing the stick…",
+  writing: "Writing",
+  "checking-stick": "Double-checking the stick",
+};
+
+function wireFlash(topPick) {
+  const iso = ISO_CATALOG[topPick.id];
+  const refreshBtn = document.getElementById("wizard-flash-refresh");
+  const sticksEl = document.getElementById("wizard-flash-sticks");
+  const consent = document.getElementById("wizard-flash-consent");
+  const flashBtn = document.getElementById("wizard-flash-button");
+  const wrap = document.getElementById("wizard-flash-progress-wrap");
+  const bar = document.getElementById("wizard-flash-progress");
+  const text = document.getElementById("wizard-flash-progress-text");
+  const errorEl = document.getElementById("wizard-flash-error");
+
+  function updateButtonState() {
+    const chosen = document.querySelector('input[name="flash-stick"]:checked');
+    flashBtn.disabled = !(chosen && consent.checked);
+  }
+
+  refreshBtn.addEventListener("click", async () => {
+    refreshBtn.disabled = true;
+    refreshBtn.textContent = "Looking…";
+    const sticks = await window.pcrescue.listUsbSticks();
+    refreshBtn.disabled = false;
+    refreshBtn.textContent = "Look again";
+    const usable = (Array.isArray(sticks) ? sticks : []).filter(
+      (s) => s.sizeGB >= MIN_STICK_GB
+    );
+    if (usable.length === 0) {
+      sticksEl.innerHTML = `<p class="question-help">No suitable stick found —
+        plug in one of ${MIN_STICK_LABEL} or more and click "Look again".</p>`;
+    } else {
+      sticksEl.innerHTML = usable
+        .map(
+          (s) => `
+          <label class="choice">
+            <input type="radio" name="flash-stick" value="${s.diskNumber}" />
+            <span class="choice-text">${s.friendlyName || "USB drive"} — ${s.sizeGB} GB</span>
+          </label>`
+        )
+        .join("");
+    }
+    updateButtonState();
+  });
+
+  sticksEl.addEventListener("change", updateButtonState);
+  consent.addEventListener("change", updateButtonState);
+
+  window.pcrescue.onFlashProgress((p) => {
+    const label = FLASH_STAGE_TEXT[p.stage] ?? p.stage;
+    if (p.stage === "writing" || p.stage === "checking-stick") {
+      if (p.totalBytes) bar.value = (p.doneBytes / p.totalBytes) * 100;
+      const doneGB = (p.doneBytes / 1024 ** 3).toFixed(2);
+      const totalGB = (p.totalBytes / 1024 ** 3).toFixed(2);
+      text.textContent = `${label} — ${doneGB} GB of ${totalGB} GB`;
+    } else {
+      bar.removeAttribute("value");
+      text.textContent = label;
+    }
+  });
+
+  flashBtn.addEventListener("click", async () => {
+    const chosen = document.querySelector('input[name="flash-stick"]:checked');
+    if (!chosen) return;
+    flashBtn.disabled = true;
+    refreshBtn.disabled = true;
+    consent.disabled = true;
+    errorEl.hidden = true;
+    wrap.hidden = false;
+    bar.removeAttribute("value");
+    text.textContent = "Waiting for the Windows permission prompt…";
+
+    const result = await window.pcrescue.flashIso(Number(chosen.value), iso);
+
+    if (!result.ok) {
+      wrap.hidden = true;
+      flashBtn.disabled = false;
+      refreshBtn.disabled = false;
+      consent.disabled = false;
+      errorEl.textContent = result.reason ?? "The write didn't work — nothing to worry about, try again.";
+      errorEl.hidden = false;
+      return;
+    }
+    bar.value = 100;
+    wrap.hidden = true;
+    flashBtn.hidden = true;
+    document.getElementById("wizard-flash-done").hidden = false;
   });
 }
 
