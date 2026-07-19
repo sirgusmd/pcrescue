@@ -54,6 +54,8 @@ developed and demoed anywhere.
 - `ROADMAP.md` — specs for what's next, including the USB wizard's safety
   rules.
 - `HANDOFF.md` — how to continue development with various AI coding tools.
+- `GETTING-STARTED.md` — plain-English basics: running the app, git/GitHub,
+  and setting up on a new machine.
 
 ## License
 
