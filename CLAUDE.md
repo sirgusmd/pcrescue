@@ -48,8 +48,11 @@ by Electron over a custom `app://` scheme (see `electron/main.js`).
    bare "distro". Plain English throughout; reading level ~age 12.
 4. **No dual-boot.** The guided path is: try from USB → back up → clean
    install. Do not add dual-boot messaging or features.
-5. **Nothing leaves the machine.** Scans are local; no telemetry, no network
-   calls except opening distro websites in the default browser.
+5. **Nothing leaves the machine.** Scans are local; no telemetry. The ONLY
+   network access is user-initiated: opening distro websites in the default
+   browser, and the wizard's ISO download (`electron/download.js`), which is
+   restricted to an allowlist of official mirror hosts and verifies a pinned
+   SHA-256 (`js/data/isos.js`) before keeping the file.
 6. **Old hardware gets light systems.** Ubuntu (GNOME) and Pop!_OS are too
    heavy for 10+ year machines — see the tier table in `recommend.js`.
 7. **Accessibility is a requirement**: keyboard navigable, visible focus,

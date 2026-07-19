@@ -11,11 +11,17 @@ Goal: from the results screen, "Start USB Flash Wizard" walks the user from
 zero to a bootable Linux USB stick, then tells them exactly how to boot it.
 
 Already built: the wizard view (`js/views/wizard.js`) with backup nudge,
-USB stick detection + 8 GB size check (`electron/scan/usbsticks.ps1`),
-honest manual instructions for step 3 (official ISO download + balenaEtcher),
-and the manufacturer-specific boot-key screen (`js/data/bootkeys.js`, fed by
-the hardware scan). **Not built: the automated download/verify/write step** —
-that is what remains below, and the safety rules apply in full.
+USB stick detection + size check (`electron/scan/usbsticks.ps1` — accepts
+7 GiB+ because "8 GB" sticks report ~7.3), the manufacturer-specific
+boot-key screen (`js/data/bootkeys.js`), and the **automated ISO download
+with SHA-256 verification** (`electron/download.js` + pinned catalog in
+`js/data/isos.js`; host allowlist; mismatch deletes the file). Etcher still
+does the write, with instructions.
+
+**Not built: the automated WRITE step** — that is what remains below, and
+the safety rules apply in full. Also outstanding: refresh `js/data/isos.js`
+when distro versions bump (pinned 2026-07-20: Mint 22.3, Ubuntu/Lubuntu
+26.04; Zorin has no stable direct URL and stays manual).
 
 ### Steps
 

@@ -10,6 +10,10 @@ contextBridge.exposeInMainWorld("pcrescue", {
   listBackupDrives: () => ipcRenderer.invoke("backup:listDrives"),
   startBackup: (letter) => ipcRenderer.invoke("backup:start", letter),
   listUsbSticks: () => ipcRenderer.invoke("wizard:listSticks"),
+  downloadIso: (entry) => ipcRenderer.invoke("wizard:download", entry),
+  cancelIsoDownload: () => ipcRenderer.invoke("wizard:cancelDownload"),
+  onDownloadProgress: (callback) =>
+    ipcRenderer.on("wizard:downloadProgress", (_event, progress) => callback(progress)),
   onBackupProgress: (callback) =>
     ipcRenderer.on("backup:progress", (_event, progress) => callback(progress)),
 });

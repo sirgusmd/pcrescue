@@ -5,6 +5,7 @@
 // and must follow the safety rules there.
 
 import { bootKeyFor } from "../data/bootkeys.js";
+import { ISO_CATALOG } from "../data/isos.js";
 
 // Users buy "8 GB" sticks (decimal), Windows reports ~7.3 GB (binary) —
 // so the size check accepts anything over 7 while the copy talks in the
@@ -67,29 +68,7 @@ export function renderWizard({ topPick, hardware }) {
 
     <div class="card wizard-step">
       <h2><span class="step-number">3</span> Put ${topPick.name} on the stick</h2>
-      <p>
-        One day this app will do this step for you. Until then, the honest
-        truth is you'll use two trusted free tools — it's a 15-minute job:
-      </p>
-      <ol class="wizard-substeps">
-        <li>
-          Download ${topPick.name}${topPick.edition ? ` (${topPick.edition})` : ""}
-          from the official site:
-          <a href="${topPick.downloadUrl ?? topPick.website}" target="_blank" rel="noopener">
-            ${(topPick.downloadUrl ?? topPick.website).replace("https://", "")}
-          </a>
-          — it's one big file (a few GB), so let it finish.
-        </li>
-        <li>
-          Download <a href="https://etcher.balena.io" target="_blank" rel="noopener">
-          balenaEtcher</a> (free) — a simple tool trusted by millions for
-          exactly this job.
-        </li>
-        <li>
-          Open Etcher: pick the file you downloaded, pick your USB stick,
-          click <strong>Flash</strong>. It double-checks everything when done.
-        </li>
-      </ol>
+      ${downloadSectionTemplate(topPick, isDesktop)}
     </div>
 
     <div class="card wizard-step">
@@ -114,7 +93,132 @@ export function renderWizard({ topPick, hardware }) {
     </div>
   `;
 
-  if (isDesktop) wireStickCheck();
+  if (isDesktop) {
+    wireStickCheck();
+    if (ISO_CATALOG[topPick.id]) wireDownload(topPick);
+  }
+}
+
+function downloadSectionTemplate(topPick, isDesktop) {
+  const iso = ISO_CATALOG[topPick.id];
+  const manualSteps = `
+      <ol class="wizard-substeps">
+        <li>
+          Download ${topPick.name}${topPick.edition ? ` (${topPick.edition})` : ""}
+          from the official site:
+          <a href="${topPick.downloadUrl ?? topPick.website}" target="_blank" rel="noopener">
+            ${(topPick.downloadUrl ?? topPick.website).replace("https://", "")}
+          </a>
+          — it's one big file (a few GB), so let it finish.
+        </li>
+        <li>
+          Download <a href="https://etcher.balena.io" target="_blank" rel="noopener">
+          balenaEtcher</a> (free) — a simple tool trusted by millions for
+          exactly this job.
+        </li>
+        <li>
+          Open Etcher: pick the file you downloaded, pick your USB stick,
+          click <strong>Flash</strong>. It double-checks everything when done.
+        </li>
+      </ol>`;
+
+  if (!iso || !isDesktop) {
+    return `
+      <p>
+        One day this app will do this step for you. Until then, the honest
+        truth is you'll use two trusted free tools — it's a 15-minute job:
+      </p>
+      ${manualSteps}`;
+  }
+
+  return `
+      <p>
+        We can fetch ${topPick.name} ${iso.version} for you from its official
+        home and double-check the copy is perfect (about ${iso.approxGB} GB —
+        give it time on slower internet):
+      </p>
+      <div class="button-row">
+        <button type="button" id="wizard-download" class="btn btn-primary">
+          Download it for me
+        </button>
+        <button type="button" id="wizard-cancel-download" class="btn btn-quiet" hidden>
+          Cancel
+        </button>
+      </div>
+      <div id="wizard-dl-progress-wrap" hidden>
+        <progress id="wizard-dl-progress" max="100" value="0"></progress>
+        <p id="wizard-dl-progress-text"></p>
+      </div>
+      <div id="wizard-dl-done" class="note note-good-news" hidden>
+        <span class="note-icon" aria-hidden="true">✅</span>
+        <div>
+          <h4>Downloaded and checked — it's perfect</h4>
+          <p id="wizard-dl-done-text"></p>
+        </div>
+      </div>
+      <p class="form-error" id="wizard-dl-error" role="alert" hidden></p>
+      <p>Then two small steps finish the job:</p>
+      <ol class="wizard-substeps">
+        <li>
+          Download <a href="https://etcher.balena.io" target="_blank" rel="noopener">
+          balenaEtcher</a> (free) — a simple tool trusted by millions for
+          exactly this job.
+        </li>
+        <li>
+          Open Etcher: pick the file we downloaded (it's in your Downloads
+          folder), pick your USB stick, click <strong>Flash</strong>.
+        </li>
+      </ol>`;
+}
+
+function wireDownload(topPick) {
+  const iso = ISO_CATALOG[topPick.id];
+  const button = document.getElementById("wizard-download");
+  const cancelBtn = document.getElementById("wizard-cancel-download");
+  const wrap = document.getElementById("wizard-dl-progress-wrap");
+  const bar = document.getElementById("wizard-dl-progress");
+  const text = document.getElementById("wizard-dl-progress-text");
+  const errorEl = document.getElementById("wizard-dl-error");
+
+  window.pcrescue.onDownloadProgress((p) => {
+    if (p.totalBytes) bar.value = (p.doneBytes / p.totalBytes) * 100;
+    const doneGB = (p.doneBytes / 1024 ** 3).toFixed(2);
+    const totalGB = p.totalBytes ? (p.totalBytes / 1024 ** 3).toFixed(2) : "?";
+    text.textContent = `Downloaded ${doneGB} GB of ${totalGB} GB…`;
+  });
+
+  button.addEventListener("click", async () => {
+    button.disabled = true;
+    cancelBtn.hidden = false;
+    errorEl.hidden = true;
+    wrap.hidden = false;
+    bar.value = 0;
+    text.textContent = "Connecting…";
+
+    const result = await window.pcrescue.downloadIso(iso);
+
+    cancelBtn.hidden = true;
+    if (!result.ok) {
+      wrap.hidden = true;
+      button.disabled = false;
+      button.textContent = "Try the download again";
+      errorEl.textContent = result.reason ?? "The download didn't work — try again.";
+      errorEl.hidden = false;
+      return;
+    }
+    bar.value = 100;
+    text.textContent = "";
+    wrap.hidden = true;
+    button.hidden = true;
+    const done = document.getElementById("wizard-dl-done");
+    document.getElementById("wizard-dl-done-text").textContent =
+      `Saved to ${result.path}. When you open Etcher, that's the file to pick.`;
+    done.hidden = false;
+  });
+
+  cancelBtn.addEventListener("click", () => {
+    window.pcrescue.cancelIsoDownload();
+  });
 }
 
 function wireStickCheck() {

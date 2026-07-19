@@ -454,11 +454,16 @@ h1:focus, h2:focus { outline: none; }
 
 #backup-progress-wrap { margin-top: 1.25rem; }
 
-#backup-progress {
+#backup-progress,
+#wizard-dl-progress {
   width: 100%;
   height: 1.1rem;
   accent-color: var(--accent);
 }
+
+#wizard-dl-progress-wrap { margin-top: 1rem; }
+
+#wizard-dl-progress-text { margin: 0.5rem 0 0; color: var(--ink-soft); }
 
 #backup-progress-text { margin: 0.5rem 0 0; color: var(--ink-soft); }
 

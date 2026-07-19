@@ -13,6 +13,7 @@ const {
   listUsbSticks,
 } = require("./scanners");
 const { runBackup } = require("./backup");
+const { downloadIso, cancelDownload } = require("./download");
 
 // app:// must be registered as a standard scheme before app is ready,
 // otherwise relative ES-module imports won't resolve.
@@ -89,6 +90,7 @@ function runSmokeTest(win) {
         document.getElementById("wizard-button").click();
         const onWizardView = !document.getElementById("view-wizard").hidden;
         const bootKeyShown = document.querySelector(".boot-key")?.textContent.trim() ?? null;
+        const hasDownloadButton = !!document.getElementById("wizard-download");
         document.getElementById("wizard-check-sticks")?.click();
         let wizardSticksText = null;
         for (let i = 0; i < 120; i++) {
@@ -114,6 +116,7 @@ function runSmokeTest(win) {
           backupDrivesText,
           onWizardView,
           bootKeyShown,
+          hasDownloadButton,
           wizardSticksText,
         };
       })()`);
@@ -125,7 +128,8 @@ function runSmokeTest(win) {
         result.onBackupView &&
         result.backupSizesShown &&
         result.onWizardView &&
-        result.bootKeyShown;
+        result.bootKeyShown &&
+        result.hasDownloadButton;
       console.log("SMOKE_RESULT " + JSON.stringify(result));
       app.exit(passed ? 0 : 1);
     } catch (error) {
@@ -149,6 +153,14 @@ app.whenReady().then(() => {
   ipcMain.handle("backup:scanSizes", () => scanDataSizes());
   ipcMain.handle("backup:listDrives", () => listBackupDrives());
   ipcMain.handle("wizard:listSticks", () => listUsbSticks());
+
+  ipcMain.handle("wizard:download", (event, entry) => {
+    const sender = event.sender;
+    return downloadIso(entry, app.getPath("downloads"), (progress) => {
+      if (!sender.isDestroyed()) sender.send("wizard:downloadProgress", progress);
+    });
+  });
+  ipcMain.handle("wizard:cancelDownload", () => cancelDownload());
 
   // Copies the user's folders to a chosen USB drive. Additive only (never
   // deletes or overwrites user data). The target letter is re-verified
